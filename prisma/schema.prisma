@@ -9,3 +9,38 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  userId  Int    @id @default(autoincrement()) @map("USER_ID")
+  name    String @default("hello world") @db.VarChar(10)
+  email   String @default(uuid()) @map("Email") @db.VarChar(50)
+  profile String @db.Text
+
+  userInfo UserInfo? @relation("USER_DETAIL_INFO")
+
+  // 가상 컬럼
+  posts Post[] @relation("UWER_HAVE_MANY_POST")
+}
+
+model Post {
+  postId   Int    @id @default(autoincrement()) @map("POST_ID")
+  content  String @map("CONTENT") @db.Text
+  writerId Int?   @map("WRITER_ID") //FK
+
+  writer User? @relation("UWER_HAVE_MANY_POST", fields: [writerId], references: [userId])
+
+  @@map("POST")
+}
+
+model UserInfo {
+  userId    Int      @id @default(autoincrement()) @map("USER_ID")
+  height    String   @map("HEIGHT") @db.Char(3)
+  weight    String   @map("WEIGHT") @db.Char(3)
+  address   String   @map("ADR") @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  user      User     @relation("USER_DETAIL_INFO", fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("USER_INFO")
+}
+
+//fields: 현 테이블의 foreign key 설정, refercences 참조키
